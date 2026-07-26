@@ -1,4 +1,4 @@
-// Main Application Controller & Router (With Firebase Login Handlers)
+// Main Application Controller & Router (With Robust DOM Ready & Error Safety)
 
 class App {
   constructor() {
@@ -6,6 +6,9 @@ class App {
   }
 
   init() {
+    if (!window.gameState) {
+      window.gameState = new GameState();
+    }
     if (!window.gameState.isLoggedIn) {
       this.renderLoginScreen();
     } else {
@@ -15,6 +18,8 @@ class App {
 
   renderLoginScreen() {
     const mainView = document.getElementById('main-view');
+    if (!mainView) return;
+
     mainView.innerHTML = `
       <div class="login-wrapper glass-card animate-pop">
         <div class="login-header">
@@ -57,7 +62,7 @@ class App {
   }
 
   showScreen(screen, extraData) {
-    if (!window.gameState.isLoggedIn && screen !== 'login') {
+    if (!window.gameState || (!window.gameState.isLoggedIn && screen !== 'login')) {
       this.renderLoginScreen();
       return;
     }
@@ -83,6 +88,7 @@ class App {
     const user = window.gameState.user;
     const title = window.gameState.getUserTitle();
     const mainView = document.getElementById('main-view');
+    if (!mainView) return;
 
     const anonBadge = window.gameState.isAnonymous 
       ? '<span class="login-status-badge anon-tag">👤 익명 모드 (기록 미저장)</span>' 
@@ -112,7 +118,7 @@ class App {
               <span class="pill-value">${user.currentGold.toLocaleString()} Gold</span>
             </div>
             <button class="btn sound-btn" id="sound-btn" onclick="app.toggleSound()">
-              ${window.soundEngine.muted ? '🔇 음소거' : '🔊 효과음 ON'}
+              ${window.soundEngine && window.soundEngine.muted ? '🔇 음소거' : '🔊 효과음 ON'}
             </button>
             <button class="btn secondary-btn small-btn" onclick="location.reload()" title="로그인 모드 재선택">🚪 전환</button>
           </div>
@@ -225,12 +231,14 @@ class App {
   }
 
   toggleSound() {
-    window.soundEngine.muted = !window.soundEngine.muted;
-    const btn = document.getElementById('sound-btn');
-    if (btn) {
-      btn.textContent = window.soundEngine.muted ? '🔇 음소거' : '🔊 효과음 ON';
+    if (window.soundEngine) {
+      window.soundEngine.muted = !window.soundEngine.muted;
+      const btn = document.getElementById('sound-btn');
+      if (btn) {
+        btn.textContent = window.soundEngine.muted ? '🔇 음소거' : '🔊 효과음 ON';
+      }
+      window.soundEngine.playClick();
     }
-    window.soundEngine.playClick();
   }
 
   showEditNameModal() {
@@ -277,6 +285,14 @@ class App {
 
 window.app = new App();
 
-document.addEventListener('DOMContentLoaded', () => {
-  window.app.init();
-});
+function startApp() {
+  if (window.app) {
+    window.app.init();
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startApp);
+} else {
+  startApp();
+}

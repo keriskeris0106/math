@@ -1,4 +1,4 @@
-// Game State & Leaderboard Management Engine (With Firebase Firestore Sync & Fallback)
+// Game State & Leaderboard Management Engine (With Robust Storage & Firebase Sync)
 
 class GameState {
   constructor() {
@@ -24,8 +24,8 @@ class GameState {
   }
 
   async handleGoogleLogin() {
-    window.firebaseService.init();
-    const fbUser = await window.firebaseService.signInWithGoogle();
+    if (window.firebaseService) window.firebaseService.init();
+    const fbUser = window.firebaseService ? await window.firebaseService.signInWithGoogle() : null;
     if (!fbUser) return false;
 
     this.loginType = 'google';
@@ -39,8 +39,8 @@ class GameState {
   }
 
   async handleAnonymousLogin() {
-    window.firebaseService.init();
-    const fbUser = await window.firebaseService.signInAnonymously();
+    if (window.firebaseService) window.firebaseService.init();
+    const fbUser = window.firebaseService ? await window.firebaseService.signInAnonymously() : null;
 
     this.loginType = 'anonymous';
     this.isLoggedIn = true;
@@ -90,25 +90,28 @@ class GameState {
   }
 
   loadUserData() {
-    const data = localStorage.getItem(this.STORAGE_KEY_USER);
-    if (data) {
-      try {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY_USER);
+      if (data) {
         const parsed = JSON.parse(data);
         return { ...this.getDefaultUser(), ...parsed };
-      } catch (e) {
-        console.error("Failed to parse user data", e);
       }
+    } catch (e) {
+      console.warn("localStorage read failed, using memory default", e);
     }
     return this.getDefaultUser();
   }
 
   saveUserData() {
     if (this.isAnonymous) return;
-    localStorage.setItem(this.STORAGE_KEY_USER, JSON.stringify(this.user));
+    try {
+      localStorage.setItem(this.STORAGE_KEY_USER, JSON.stringify(this.user));
+    } catch (e) {
+      console.warn("localStorage write failed", e);
+    }
     this.updateMyRankings();
 
-    // Sync user data to Firebase Firestore DB if logged in with Google
-    if (this.firebaseUser && this.firebaseUser.uid) {
+    if (this.firebaseUser && this.firebaseUser.uid && window.firebaseService) {
       window.firebaseService.saveUserToFirestore(this.firebaseUser.uid, this.user);
     }
   }
@@ -191,23 +194,27 @@ class GameState {
   }
 
   loadRankings() {
-    const data = localStorage.getItem(this.STORAGE_KEY_RANKINGS);
-    if (data) {
-      try {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY_RANKINGS);
+      if (data) {
         const parsed = JSON.parse(data);
         return { ...this.getDefaultRankings(), ...parsed };
-      } catch (e) {
-        console.error("Failed to parse rankings data", e);
       }
+    } catch (e) {
+      console.warn("localStorage rankings load failed", e);
     }
     const defaults = this.getDefaultRankings();
-    localStorage.setItem(this.STORAGE_KEY_RANKINGS, JSON.stringify(defaults));
+    try {
+      localStorage.setItem(this.STORAGE_KEY_RANKINGS, JSON.stringify(defaults));
+    } catch (e) {}
     return defaults;
   }
 
   saveRankings() {
     if (this.isAnonymous) return;
-    localStorage.setItem(this.STORAGE_KEY_RANKINGS, JSON.stringify(this.rankings));
+    try {
+      localStorage.setItem(this.STORAGE_KEY_RANKINGS, JSON.stringify(this.rankings));
+    } catch (e) {}
   }
 
   updateMyRankings() {
