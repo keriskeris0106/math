@@ -1,14 +1,13 @@
 // Firebase SDK Initialization & Helper Module
 
-// NOTE: Replace the values below with your Firebase Project Configuration from Firebase Console
-// https://console.firebase.google.com/
 const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyClOFJ5EHx2VgV4BVyLM2Id3TxUhz_HYvc",
+  authDomain: "gugudan-adventure.firebaseapp.com",
+  projectId: "gugudan-adventure",
+  storageBucket: "gugudan-adventure.firebasestorage.app",
+  messagingSenderId: "730563174250",
+  appId: "1:730563174250:web:254e35c16ff9ffa05a8f13",
+  measurementId: "G-9VQL5H51CQ"
 };
 
 class FirebaseService {
@@ -20,8 +19,7 @@ class FirebaseService {
   }
 
   init() {
-    // Check if Firebase JS SDK is loaded and API key is configured
-    if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+    if (typeof firebase !== 'undefined') {
       try {
         if (!firebase.apps.length) {
           this.app = firebase.initializeApp(firebaseConfig);
@@ -31,20 +29,19 @@ class FirebaseService {
         this.auth = firebase.auth();
         this.db = firebase.firestore();
         this.isInitialized = true;
-        console.log("🔥 Firebase Service initialized successfully!");
+        console.log("🔥 Firebase Service initialized successfully for project gugudan-adventure!");
       } catch (e) {
         console.warn("Firebase init error. Operating in local fallback mode.", e);
         this.isInitialized = false;
       }
     } else {
-      console.log("ℹ️ Firebase API key is template/placeholder. Operating in high-performance local mode!");
+      console.log("ℹ️ Operating in high-performance local mode!");
       this.isInitialized = false;
     }
   }
 
   async signInWithGoogle() {
     if (!this.isInitialized) {
-      // Local fallback simulation for Google login
       const name = prompt('구글 계정 닉네임을 입력하세요:', window.gameState.user.username || '구글학생');
       return {
         uid: 'local_google_' + Date.now(),
@@ -94,7 +91,6 @@ class FirebaseService {
     }
   }
 
-  // Save user document to Firestore
   async saveUserToFirestore(uid, userData) {
     if (!this.isInitialized || !this.db) return;
     try {
@@ -104,7 +100,6 @@ class FirebaseService {
     }
   }
 
-  // Fetch real-time leaderboard top 10 from Firestore
   async fetchTopRankings(category) {
     if (!this.isInitialized || !this.db) return null;
     try {
