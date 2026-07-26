@@ -3,14 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>구구단 어드벤처 - 미니게임 & 보스 레이드 (Firebase & Vercel)</title>
-  <meta name="description" content="구구단 3종 미니게임, 10문제 보스전, 실시간 Firebase 명예의 전당 랭킹 게임!">
+  <title>구구단 어드벤처 - 미니게임 & 보스 레이드</title>
+  <meta name="description" content="구구단 3종 미니게임, 10문제 보스전, 실시간 Firebase 명예의 전당 랭킹 웹 게임!">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="app-container">
     <main id="main-view">
-      <!-- Dynamic Views rendered via js/app.js -->
+      <!-- Pre-rendered Static Initial View (Prevents any white screen flashes!) -->
+      <div class="login-wrapper glass-card animate-pop">
+        <div class="login-header">
+          <div class="game-logo-icon">⚡</div>
+          <h2>구구단 어드벤처</h2>
+          <p>모드를 선택하여 구구단 학습 탐험을 시작하세요!</p>
+        </div>
+
+        <div class="login-options">
+          <div class="login-option-card google-card" onclick="if(window.app) window.app.handleLogin('google')">
+            <div class="opt-icon">🌐</div>
+            <div class="opt-text">
+              <h3>구글 로그인으로 시작</h3>
+              <p>골드, 미니게임 성적, 명예의 전당 랭킹이 모두 <strong>Firebase DB에 누적 저장</strong>됩니다.</p>
+            </div>
+            <button class="btn primary-btn">구글 로그인 ▶</button>
+          </div>
+
+          <div class="login-option-card anon-card" onclick="if(window.app) window.app.handleLogin('anonymous')">
+            <div class="opt-icon">👤</div>
+            <div class="opt-text">
+              <h3>익명으로 시작</h3>
+              <p>일회성 플레이 모드입니다. 기록이 명예의 전당에 <strong>누적되지 않습니다</strong>.</p>
+            </div>
+            <button class="btn secondary-btn">익명 시작 ▶</button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 

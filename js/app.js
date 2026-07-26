@@ -1,4 +1,4 @@
-// Main Application Controller & Router (With Robust DOM Ready & Error Safety)
+// Main Application Controller & Router (With Pre-rendered View Safety & Incognito Fallback)
 
 class App {
   constructor() {
@@ -9,11 +9,11 @@ class App {
     if (!window.gameState) {
       window.gameState = new GameState();
     }
-    if (!window.gameState.isLoggedIn) {
-      this.renderLoginScreen();
-    } else {
+
+    if (window.gameState.isLoggedIn) {
       this.showScreen('lobby');
     }
+    // If not logged in, index.html already pre-renders the login screen cleanly!
   }
 
   renderLoginScreen() {
@@ -52,12 +52,18 @@ class App {
   }
 
   async handleLogin(type) {
-    if (type === 'google') {
-      const success = await window.gameState.handleGoogleLogin();
-      if (success) this.showScreen('lobby');
-    } else {
-      const success = await window.gameState.handleAnonymousLogin();
-      if (success) this.showScreen('lobby');
+    try {
+      if (type === 'google') {
+        const success = await window.gameState.handleGoogleLogin();
+        if (success) this.showScreen('lobby');
+      } else {
+        const success = await window.gameState.handleAnonymousLogin();
+        if (success) this.showScreen('lobby');
+      }
+    } catch (e) {
+      console.warn("Login fallback executed", e);
+      window.gameState.setLoginType('anonymous');
+      this.showScreen('lobby');
     }
   }
 
